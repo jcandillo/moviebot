@@ -40,3 +40,9 @@ Supersedes the earlier "any subscription/free provider" home gate.
 - Recompute people (director 2, writer/creator 1.5, lead 1, cast 0.6), keyword and genre affinity from current taste signals; unconfirmed history stays weight 0.
 - Check visible cards respect the why-line diversity cap (one seed or person on at most 3 visible cards).
 - Optional weekly preview-only improvement session (no display publish) whose notes feed the owner's review; schedule it only with the owner's approval.
+
+## Reco layer upkeep (optional; see `docs/reco.md`)
+- In the weekly preview session run `bash reco/refresh_all.sh`: link reactions to logged impressions, refresh the candidate pool from the flagged sources, apply the quality floor, refresh similarity features, retrain the personal model (used only once enough labelled reactions exist), run the offline eval with its weight grid, and write the scorecard. Preview only; it never publishes to a display.
+- Bring the scorecard to the owner's weekly review: acceptance and hit rate per ranker and for the exploration lane, plus offline HR@10 / NDCG@10.
+- Change blend weights only if the eval winner beats the active weights. Log every change in the experiment changelog: snapshot the DB and flags first, put the change behind a flag, record date/time, what, why, metric before/after and rollback steps.
+- Person search and attribute-level why lines are flag-gated experiments (`pool_person_search`, `why_v3_frame`). When attribute why lines are on, check the share of generic fallback lines and any odd "like X" citations; setting the flag to false turns them off in one step.

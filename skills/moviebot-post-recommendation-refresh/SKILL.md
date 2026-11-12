@@ -25,3 +25,8 @@ Frame candidates must satisfy MovieBot frame Movie Night's where_to_watch contra
 
 Architecture §12 + §5a + §1:
 your instance Architecture document (public reference: `docs/architecture.md`; keep your instance copy and its link private)
+
+## Reco logging (optional; see `docs/reco.md`)
+- Every display wake logs the cards shown and the reactions (`reco/reco_log.py log-picks` / `ingest-reactions`) and refreshes `reco/precompute.py`; these run inside the wake pipeline.
+- If you publish outside the wake pipeline, run `python3 reco/reco_log.py log-picks <readback.json>` after the readback.
+- Ranking and why lines follow the instance flags file (copy of `config/reco_flags.example.json`: `live_ranker`, `live_pool_widen`, `explore_thompson`, `why_v3_frame`). Never edit flags without an experiment changelog entry.

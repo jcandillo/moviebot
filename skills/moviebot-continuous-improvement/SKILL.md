@@ -16,19 +16,20 @@ GitHub skills repo (private): https://github.com/your-github-user/moviebot under
 Local checkout: instance-local clone of this repository
 
 ## When to run (detect change)
-1. **Event path (immediate):** After any locked owner decision or workflow change for MovieBot — onboarding, cancellation, subscribe/trial, connectors, maintenance, recommendation card, refresh loop, Frame Movie Night publish, privacy phase, license/publication, or similar.
+1. **Event path (immediate):** After any locked owner decision or workflow change for MovieBot — onboarding, taste weights, watch-history interview, title metadata, why-line rules, cancellation, subscribe/trial, connectors, maintenance, recommendation card, refresh loop, Frame Movie Night publish, privacy phase, license/publication, reco experiment flags, ranker weights, pool sources, exploration share, or similar.
 2. **Audit path (scheduled):** Thursday continuous-improvement audit (alongside Thursday maintenance intent).
 3. **Drift signal:** Architecture Page text contradicts a MovieBot skill body, or a skill exists on only one of GitHub vs shared library.
 
 ## Propagate (always this order)
 1. **Update the Architecture Page first** — lock the decision in the right section (§1 optional display, §5a workflows, §5b dashboard, §12 recommend, §12a taste profile, §16 tracker, etc.). Date the lock. Do not invent privacy policy (phase two).
 2. **Mirror into skills**
-   - Rewrite or add the matching `skills/<id>/SKILL.md` in the local checkout, commit, push to `your-github-user/moviebot`.
+   - Rewrite or add the matching `skills/<id>/SKILL.md` in the local checkout, commit, push to `your-github-user/moviebot`. If the repository is public, keep copies agent-neutral with no personal data, and run a secret scanner (for example gitleaks) before every push.
    - Update the matching skill in your agent host's skill library so every agent that runs MovieBot loads the same procedure.
 3. **Point the MovieBot agent** — if new skills or new Architecture links matter, refresh the MovieBot agent's instructions so it still points at the Page and the skill set.
 4. **Report** — one short note to the owner: what changed on the Page, which skill folders updated, and any conflict that needs a decision.
 
 ## Hard rules
+- Experiments: before any change, snapshot the DB and flags, put the change behind a flag, and log date/time, what, why, metric before/after and rollback steps in the experiment changelog and the Architecture experiment log; tag the repository commit `exp-YYYYMMDD-<name>`. Third-party ratings datasets, learned weights and personal data never go in a public repository.
 - Architecture Page wins on conflict unless the owner gave a newer explicit override in chat/voice — then update the Page to match that override, then skills.
 - Do **not** auto-change runtime product behavior, billing, or send messages as the owner.
 - Doc/skill sync is reversible documentation work; still ask before deleting a skill globally.
