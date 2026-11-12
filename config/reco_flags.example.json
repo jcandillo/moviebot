@@ -1,0 +1,20 @@
+{
+ "_comment": "Copy to config/reco_flags.json (gitignored). Every experiment is one flag so it can be turned off in one edit.",
+ "log_impressions": true,
+ "quality_floor": true,
+ "pool_tmdb_discover": true,
+ "pool_tmdb_recs": true,
+ "pool_person_search": false,
+ "ml_cf": true,
+ "personal_model": true,
+ "explore_thompson": true,
+ "explore_share": 0.10,
+ "live_ranker": "content",
+ "live_ranker_since": null,
+ "live_pool_widen": false,
+ "pool_english_only": false,
+ "new_era_max_age_years": 3,
+ "widen_min_year": 1970,
+ "why_v3_frame": false,
+ "implicit_history_exclusion": true
+}

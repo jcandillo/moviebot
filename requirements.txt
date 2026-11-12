@@ -3,3 +3,7 @@
 #
 # Optional, only for re-rendering the demo screenshots (integrations/photo-frame/tools/render_demo_screens.py):
 #   playwright>=1.40   (then: playwright install chromium)
+#
+# Optional, only for the reco layer's ML parts (reco/ml_build.py, precompute.py, personal_model.py, evaluate.py):
+#   numpy>=2.0
+#   scipy>=1.12

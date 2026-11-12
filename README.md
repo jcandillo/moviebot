@@ -19,6 +19,7 @@ Each deployment is for one person. Taste signals, watch history, subscription li
 ## Start here
 
 - **Agents:** read [`docs/REPLICATE.md`](docs/REPLICATE.md) (the build spec) and [`docs/architecture.md`](docs/architecture.md). §18 of REPLICATE lists what this repo implements vs what is spec-only.
+- **Recommendation quality:** the optional reco layer (impression/reaction logging, quality floor, wider TMDB pool, MovieLens collaborative similarity, personal model, exploration, offline eval) is described in [`docs/reco.md`](docs/reco.md).
 - **Humans:** the public overview is at <https://sites.google.com/view/moviebot>.
 
 ## Quickstart (core, no display needed)

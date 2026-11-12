@@ -122,3 +122,24 @@ CREATE TABLE IF NOT EXISTS in_theaters_listings(
 CREATE TABLE IF NOT EXISTS audit_receipts(
   id INTEGER PRIMARY KEY, at TEXT NOT NULL DEFAULT (datetime('now')), actor TEXT NOT NULL, action TEXT NOT NULL,
   target TEXT, approval_ref TEXT, details_json TEXT);
+
+-- [CORE-IMPLEMENTED] Reco layer (reco/common.py creates these idempotently). Expertise + measurement:
+-- impressions (every card shown), reactions (votes / Next / Watched / interview answers), widened candidate pool, TMDB metadata + US providers,
+-- quality floor (Bayesian WR from TMDB + optional local IMDb ratings), model versions, CF features (MovieLens, built locally), lane stats, implicit history.
+CREATE TABLE IF NOT EXISTS reco_impressions(impression_id TEXT PRIMARY KEY, picks_revision INTEGER, surface TEXT NOT NULL, slot_id TEXT NOT NULL, rank INTEGER,
+ tmdb_id INTEGER NOT NULL, media_type TEXT DEFAULT 'movie', title TEXT, year INTEGER, why TEXT, why_type TEXT, score REAL, features_json TEXT, model_version TEXT,
+ lane TEXT, where_to_watch_status TEXT, shown_at TEXT NOT NULL, source_path TEXT, logged_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS reco_reactions(reaction_id TEXT PRIMARY KEY, impression_id TEXT, tmdb_id INTEGER NOT NULL, reaction TEXT NOT NULL
+ CHECK(reaction IN('up','down','next','watched','skip','interview_loved','interview_fine','interview_not_for_me')), slot_id TEXT, displayed_revision INTEGER,
+ event_timestamp TEXT, source TEXT NOT NULL, logged_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS reco_meta(tmdb_id INTEGER PRIMARY KEY, title TEXT, year INTEGER, release_date TEXT, original_language TEXT, genres_json TEXT, directors_json TEXT,
+ writers_json TEXT, cast_json TEXT, keywords_json TEXT, overview TEXT, poster_path TEXT, vote_average REAL, vote_count INTEGER, popularity REAL, imdb_id TEXT,
+ us_flatrate_json TEXT, us_free_json TEXT, us_rent_json TEXT, us_buy_json TEXT, providers_checked_at TEXT, status TEXT, fetched_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS reco_candidates(tmdb_id INTEGER NOT NULL, source TEXT NOT NULL, detail TEXT, added_at TEXT NOT NULL, PRIMARY KEY(tmdb_id, source, detail));
+CREATE TABLE IF NOT EXISTS reco_imdb_ratings(imdb_id TEXT PRIMARY KEY, average_rating REAL, num_votes INTEGER, loaded_at TEXT);
+CREATE TABLE IF NOT EXISTS reco_quality(tmdb_id INTEGER PRIMARY KEY, wr_tmdb REAL, wr_imdb REAL, quality REAL, passes_floor INTEGER, reason TEXT, computed_at TEXT);
+CREATE TABLE IF NOT EXISTS reco_model_versions(model_version TEXT PRIMARY KEY, kind TEXT, params_json TEXT, n_train INTEGER, metrics_json TEXT, created_at TEXT, active INTEGER DEFAULT 0);
+CREATE TABLE IF NOT EXISTS reco_lane_stats(lane TEXT PRIMARY KEY, ups REAL DEFAULT 0, downs REAL DEFAULT 0, updated_at TEXT);
+CREATE TABLE IF NOT EXISTS reco_implicit_history(tmdb_id INTEGER, title TEXT, service TEXT, n_views INTEGER, first_seen TEXT, last_seen TEXT, PRIMARY KEY(tmdb_id, service));
+CREATE TABLE IF NOT EXISTS reco_cf_features(tmdb_id INTEGER PRIMARY KEY, cf_pos REAL, cf_neg REAL, cf_imp REAL, computed_at TEXT, taste_hash TEXT);
+CREATE TABLE IF NOT EXISTS reco_explore_choices(day TEXT, slot_id TEXT, tmdb_id INTEGER, lane TEXT, theta REAL, PRIMARY KEY(day, slot_id));

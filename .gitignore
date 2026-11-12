@@ -47,3 +47,13 @@ prototype/
 staging-movies/
 recommendations.json
 moviebot.db
+
+# Reco layer: third-party datasets and derived models stay local (MovieLens = research/non-commercial; IMDb = personal/non-commercial)
+ml-data/
+*.npz
+*.tsv.gz
+ml-32m/
+config/reco_flags.json
+improvement-sessions/
+reco/eval-*.json
+reco/eval-*.log
