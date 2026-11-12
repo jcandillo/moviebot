@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1280, height=800, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:; connect-src 'self'; form-action 'none'; base-uri 'none'">
+<title>Movies</title>
+<style>
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;height:100%;background:#0a1014;color:#f3f0e8;font:17px/1.35 Arial,Helvetica,sans-serif;overflow:hidden}
+.screen{box-sizing:border-box;width:1280px;height:100vh;max-height:800px;margin:0 auto;padding:max(18px,env(safe-area-inset-top)) 28px 14px;overflow:hidden;display:flex;flex-direction:column;gap:10px}
+.top{display:flex;align-items:center;gap:14px;flex:0 0 auto;min-height:52px}
+.back{padding:10px 14px;border-radius:10px;border:1px solid #3d4a50;background:#172228;color:#e8eceb;text-decoration:none;font-size:16px;min-height:48px;display:flex;align-items:center}
+h1{font-size:30px;margin:0;flex:1}
+.stage{font-size:11px;letter-spacing:2px;color:#e0c070;border:1px solid #6a5a30;padding:4px 8px;border-radius:6px}
+.mode{display:flex;gap:8px}
+.mode button,.chip{min-height:52px;padding:0 18px;border-radius:12px;border:1px solid #445057;background:#1c292f;color:#e8eef0;font-size:17px;font-weight:700;cursor:pointer}
+.mode button.on,.chip.on{background:#2c4a3a;border-color:#6a9a6e;color:#fff}
+.chips{display:flex;gap:10px}
+.chip{flex:1;padding:0 8px}
+.pair{display:flex;gap:22px;flex:1;min-height:0}
+.card{flex:1;display:flex;flex-direction:column;gap:6px;background:#121b20;border:1px solid #2c3a40;border-radius:16px;padding:12px 14px;min-width:0}
+.badge{align-self:flex-start;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#dce8d5;background:#28382c;border:1px solid #3d5344;padding:5px 9px;border-radius:6px}
+.row{display:flex;gap:14px;flex:1;min-height:0}
+.poster{flex:0 0 230px;height:345px;border-radius:10px;overflow:hidden;background:#0d1418}
+.poster img{width:100%;height:100%;object-fit:cover;display:block}
+.copy{flex:1;display:flex;flex-direction:column;min-width:0}
+h2{margin:0 0 4px;font-size:23px;line-height:1.15}
+.meta{color:#d5cfae;font-size:14px;margin-bottom:4px}
+.why{margin:0 0 6px;color:#cfd8d7;font-size:15px;font-style:italic}
+.description{margin:0 0 8px;color:#e8e4d8;font-size:15px;line-height:1.4}
+
+.where{font-size:14px;line-height:1.35;margin:0 0 6px;display:flex;flex-direction:column;gap:3px}
+.wl{color:#b9d4c8}.wl b{color:#e8f2ec;font-weight:700}.wl.sub b{color:#9fe0b8}.wsrc{color:#7f8f94;font-size:12px}
+.credits{color:#9aa8ad;font-size:13px;margin-top:2px}
+.empty{color:#9aa8ad;font-size:16px;padding:30px}
+.btns{display:flex;align-items:center;justify-content:flex-end;gap:12px;padding-top:10px;border-top:1px solid #22313a;margin-top:auto} /* right-aligned: native floating Menu sits bottom-left */
+.vote{width:60px;height:56px;border-radius:12px;border:1px solid #445057;background:#1c292f;font-size:26px;cursor:pointer}
+.vote.selected.up{border-color:#6a9a6e;background:#24382a}.vote.selected.down{border-color:#9a6a6a;background:#382424}
+.act{min-height:56px;padding:0 16px;border-radius:12px;border:1px solid #445057;background:#1c292f;color:#e8eef0;font-size:16px;font-weight:700;cursor:pointer}
+.act.done{border-color:#6a9a6e;background:#24382a;color:#b7d4b5}
+.status{font-size:13px;color:#9aa8ad;flex:1;text-align:left;order:-1;padding-left:84px}
+.status.err{color:#e0a8a8}.status.ok{color:#b7d4b5}
+.theaters{display:flex;gap:16px;flex:1 1 0;min-height:0;overflow-x:auto;overflow-y:hidden;align-items:stretch}
+.tcard{box-sizing:border-box;max-height:100%;min-height:0;flex:0 0 340px;width:340px;max-width:340px;overflow-y:auto;background:#121b20;border:1px solid #2c3a40;border-radius:14px;padding:10px;display:flex;flex-direction:column;gap:5px}
+.tcard .poster{flex:0 0 110px;width:110px;height:165px}.thead{display:flex;gap:10px}.shows{font-size:14px;line-height:1.35;display:flex;flex-direction:column;gap:4px}.shows b{color:#e8f2ec}.shows .t{color:#9fe0b8}.shows .x{color:#7f8f94;font-size:12px}
+.tcard .description{margin:0 0 8px;color:#e8e4d8;font-size:15px;line-height:1.4}
+.tcard h2{font-size:19px}
+.tnote{color:#9aa8ad;font-size:13px}
+</style></head><body>
+<main class="screen">
+  <div class="top"><a class="back" href="/">← Today</a><h1>Movies</h1><!--REVIEW_BANNER-->
+    <div class="mode"><button id="m-stream" class="on">Watch at home</button><button id="m-theaters">In Theaters</button></div></div>
+  <div class="chips" id="chips"></div>
+  <div class="pair" id="pair"></div>
+  <div class="theaters" id="theaters" hidden></div>
+  <div class="tnote" id="tnote" hidden></div>
+</main>
+<script>
+(function(){
+var doc=null, genre=null, rev=null, mem={};
+function esc(t){var d=document.createElement('div');d.textContent=t==null?'':String(t);return d.innerHTML;}
+function uuid(){return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,function(c){var r=Math.random()*16|0;return (c==='x'?r:(r&3|8)).toString(16);});}
+function cap(b,n){return b.length>n?b.slice(0,n).concat(['+'+(b.length-n)+' more']):b;}
+function bits(a){var o=[];(a||[]).forEach(function(s){if(s&&typeof s==='object'){var n=String(s.service||'').trim(),v=String(s.via||'').trim();if(n)o.push(n+(v?' ('+v+')':''));}else if(s)o.push(String(s));});return o;}
+var CANON=[[/^Paramount\s*(Plus|\+)/i,'Paramount+'],[/^Apple\s*TV\s*(Plus|\+)/i,'Apple TV+'],[/^Disney\s*(Plus|\+)/i,'Disney+'],[/^AMC\s*(Plus|\+)/i,'AMC+'],[/^MGM\s*(Plus|\+)/i,'MGM+'],[/^Peacock/i,'Peacock'],[/^Netflix/i,'Netflix'],[/^Max\b/i,'Max']];
+function reported(){return (doc&&doc.reported_subscriptions)||[];} // owner-reported services from the picks doc: listed first, never claimed as entitlement
+function canon(n){for(var i=0;i<CANON.length;i++)if(CANON[i][0].test(n))return CANON[i][1];return n;}
+function groupSubs(a){var order=[],m={};(a||[]).forEach(function(s){var n=String((s&&s.service)||s||'').trim();if(!n)return;var c=n,tier='',via=(s&&s.via)||'';for(var i=0;i<CANON.length;i++){var mm=n.match(CANON[i][0]);if(mm){c=CANON[i][1];tier=n.slice(mm[0].length).trim();break;}}
+  if(!m[c]){m[c]=[];order.push(c);}var v=[tier,via?'via '+via:''].filter(Boolean).join(' ');if(v&&m[c].indexOf(v)<0)m[c].push(v);});
+  order.sort(function(x,y){var R=reported();return (R.indexOf(x)<0)-(R.indexOf(y)<0);});
+  return order.map(function(c){return c+(m[c].length?' ('+m[c].join(', ')+')':'');});}
+function lst(a){return bits(a).map(canon).filter(function(v,i,s){return s.indexOf(v)===i;});}
+function whereHTML(w){
+  if(!w||typeof w!=='object'||!w.status) return '<div class="wl">Where to watch: unverified</div>';
+  if(w.status==='unverified') return '<div class="wl">Where to watch: unverified (lookup failed — not "no offers")</div>';
+  if(w.status==='verified_no_home_offers') return '<div class="wl">'+(w.theaters_only?'Not streaming yet — theaters only':'No home offers (US)')+'</div>';
+  var h='',sub=groupSubs(w.subscription),fr=lst(w.free),re=lst(w.rent),bu=lst(w.buy);
+  if(sub.length)h+='<div class="wl sub"><b>Subscription:</b> '+esc(sub.join(' · '))+'</div>';
+  if(fr.length)h+='<div class="wl"><b>Free with ads:</b> '+esc(fr.join(', '))+'</div>';
+  if(re.length&&bu.length&&re.join()==bu.join())h+='<div class="wl"><b>Rent or buy:</b> '+esc(re.join(', '))+'</div>';
+  else{if(re.length)h+='<div class="wl"><b>Rent:</b> '+esc(re.join(', '))+'</div>';if(bu.length)h+='<div class="wl"><b>Buy:</b> '+esc(bu.join(', '))+'</div>';}
+  var d=(w.checked_at||'').slice(5,10).replace('-','/');
+  return (h||'<div class="wl">Where to watch: unverified</div>')+(d?'<div class="wsrc">US · JustWatch, checked '+d+'</div>':'');}
+function where(w){var t=document.createElement('div');t.innerHTML=whereHTML(w);return t.textContent;}
+function rating(s){return (s.rating!=null&&s.rating!=='')?('TMDB '+s.rating+'%'):'TMDB rating unavailable';}
+function homeOK(s){var w=s&&s.watch_availability;return !!(w&&!w.theaters_only&&((w.status==='verified_offers'&&w.home_offers===true)||w.status==='unverified'));} // no-hold: unverified shown honestly; no-home/theaters-only never in main
+function cardHTML(s,label){
+  if(!s||!homeOK(s)) return '<article class="card"><div class="badge">'+label+'</div><div class="empty">No '+label.toLowerCase()+' title with verified home availability in this genre yet.</div></article>';
+  return '<article class="card" data-slot="'+esc(s.slot_id)+'" data-title="'+esc(s.title)+'" data-tmdb="'+s.tmdb_id+'" data-year="'+s.year+'">'+
+   '<div class="badge">'+label+'</div><div class="row"><div class="poster">'+(s.poster?'<img alt="'+esc(s.title)+' poster" src="'+s.poster+'">':'')+'</div><div class="copy">'+
+   '<h2>'+esc(s.title)+'</h2><div class="meta">'+esc(rating(s)+' · '+s.year)+'</div><p class="why">'+esc(s.why||'')+'</p>'+
+   '<p class="description">'+esc(s.description||'Description unavailable')+'</p><div class="where">'+whereHTML(s.watch_availability)+'</div>'+
+   (s.credits?'<div class="credits">'+esc(s.credits)+'</div>':'')+'</div></div>'+
+   '<div class="btns"><button class="vote up" data-vote="up" aria-label="Thumbs up">👍</button><button class="vote down" data-vote="down" aria-label="Thumbs down">👎</button>'+
+   '<button class="act" data-action="watched">Watched</button><button class="act" data-action="next">Next</button><div class="status"></div></div></article>';
+}
+function renderChips(){var h='';(doc.genres||[]).forEach(function(g){h+='<button class="chip'+(g.genre_id===genre?' on':'')+'" data-g="'+esc(g.genre_id)+'">'+esc(g.label)+'</button>';});
+  document.getElementById('chips').innerHTML=h;
+  Array.prototype.forEach.call(document.querySelectorAll('.chip'),function(b){b.onclick=function(){genre=b.getAttribute('data-g');renderChips();renderPair();};});}
+function renderPair(){var g=(doc.genres||[]).filter(function(x){return x.genre_id===genre;})[0]||{};
+  document.getElementById('pair').innerHTML=cardHTML(g['new'],'New')+cardHTML(g.classic,'Classic');wire(document.getElementById('pair'));}
+function fmtName(f){f=String(f||'').split(' Showtimes')[0].trim();return f==='Regular'?'':f;}
+function showAt(iso,t){var m=/^(\d{1,2}):(\d{2})\s*(am|pm)$/i.exec(t||'');if(!m||!iso)return null;var h=+m[1]%12+(m[3].toLowerCase()==='pm'?12:0);
+  return new Date(iso.slice(0,10)+'T'+(h<10?'0':'')+h+':'+m[2]+':00'+iso.slice(19));}
+function showsHTML(s){var sh=s.showings||[];if(!sh.length)return '<div class="where">Theater listing unverified</div>';var now=new Date(),h='';
+  var ld=sh[0].listed_date||'',cd=sh[0].checked_date||String(sh[0].checked_at||'').slice(0,10),today=now.getFullYear()+'-'+('0'+(now.getMonth()+1)).slice(-2)+'-'+('0'+now.getDate()).slice(-2),stale=cd&&cd!==today;
+  sh.forEach(function(x){h+='<div><b>'+esc(x.theater)+'</b> · '+esc(x.city)+'</div>';});
+  return '<div class="shows"><div class="x">'+(stale?'Listed for '+esc(ld||cd)+' — not refreshed':'Playing '+esc(ld||cd))+' · showtimes.com, checked '+esc(cd.slice(5).replace('-','/'))+'</div>'+h+'</div>';}
+function renderTheaters(){var t=doc.in_theaters||{},h='';
+  (t.items||[]).forEach(function(s){h+='<article class="tcard"><div class="thead"><div class="poster">'+(s.poster?'<img alt="" src="'+s.poster+'">':'')+'</div><div><h2>'+esc(s.title)+'</h2><div class="meta">'+esc(rating(s)+' · '+s.year)+'</div></div></div>'+
+   '<p class="description">'+esc(s.description||'Description unavailable')+'</p>'+showsHTML(s)+'</article>';});
+  document.getElementById('theaters').innerHTML=h||'<div class="empty">'+(t.status==='checked'?'No in-theater listings found.':'Theater listings unverified.')+'</div>';
+  var n=document.getElementById('tnote');n.textContent=((t.items||[]).length>4?'Swipe sideways for more → · ':'')+(t.note||'');}
+function key(c,a){return c.getAttribute('data-slot')+'|'+c.getAttribute('data-tmdb')+'|'+rev+'|'+a;}
+function post(c,path,extra,st,done){
+  var body={slot_id:c.getAttribute('data-slot'),displayed_revision:rev,title:c.getAttribute('data-title'),year:+c.getAttribute('data-year'),tmdb_id:+c.getAttribute('data-tmdb'),media_type:'movie',test:false};
+  for(var k in extra)body[k]=extra[k];st.className='status';st.textContent='Sending…';
+  var x=new XMLHttpRequest();x.open('POST',path,true);x.setRequestHeader('Content-Type','application/json');
+  x.onreadystatechange=function(){if(x.readyState!==4)return;var r={};try{r=JSON.parse(x.responseText||'{}');}catch(e){}
+    if(x.status===200&&r.ok){st.className='status ok';st.textContent=r.ui_message||'Saved';done();}else{st.className='status err';st.textContent='Not saved — '+(r.error||('HTTP '+x.status));}};
+  x.send(JSON.stringify(body));}
+function wire(root){Array.prototype.forEach.call(root.querySelectorAll('.card[data-slot]'),function(c){var st=c.querySelector('.status');
+  Array.prototype.forEach.call(c.querySelectorAll('.vote'),function(b){b.onclick=function(){var v=b.getAttribute('data-vote');
+    post(c,'/api/movie-night/vote',{vote:v},st,function(){Array.prototype.forEach.call(c.querySelectorAll('.vote'),function(o){o.classList.toggle('selected',o===b);});});};});
+  Array.prototype.forEach.call(c.querySelectorAll('.act'),function(b){b.onclick=function(){var a=b.getAttribute('data-action'),k=key(c,a);mem[k]=mem[k]||uuid();
+    post(c,'/api/movie-night/action',{action:a,event_id:mem[k]},st,function(){b.classList.add('done');});};});});}
+function mode(th){document.getElementById('m-stream').className=th?'':'on';document.getElementById('m-theaters').className=th?'on':'';
+  document.getElementById('chips').hidden=th;document.getElementById('pair').hidden=th;document.getElementById('theaters').hidden=!th;document.getElementById('tnote').hidden=!th;}
+document.getElementById('m-stream').onclick=function(){mode(false);};document.getElementById('m-theaters').onclick=function(){mode(true);};
+function show(p){if(p.revision===rev&&doc)return;doc=p;rev=p.revision;if(!genre&&p.genres&&p.genres.length)genre=p.genres[0].genre_id;renderChips();renderPair();renderTheaters();}
+function load(){if(window.__DOC){show(window.__DOC);return;}var x=new XMLHttpRequest();x.open('GET','/api/movie-night/picks',true);x.onreadystatechange=function(){if(x.readyState!==4||x.status!==200)return;
+  try{var p=JSON.parse(x.responseText);if(p.revision===rev&&doc)return;doc=p;rev=p.revision;if(!genre&&p.genres&&p.genres.length)genre=p.genres[0].genre_id;renderChips();renderPair();renderTheaters();}catch(e){}};x.send();}
+window.__mode=mode;window.__genre=function(g){genre=g;renderChips();renderPair();};
+var H=(location.hash||'').replace('#','').split('&').reduce(function(o,kv){var a=kv.split('=');if(a[0])o[a[0]]=a[1];return o;},{});
+if(H.genre)genre=H.genre;if(H.view==='theaters')mode(true);
+load();if(!window.__DOC)setInterval(load,15000);
+})();
+</script></body></html>

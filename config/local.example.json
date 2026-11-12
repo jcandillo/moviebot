@@ -1,0 +1,24 @@
+{
+  "_comment": "Copy to config/local.json (gitignored) and replace every value with your own. Never commit config/local.json. Values below are DEMO placeholders, not anyone's real taste or area.",
+  "onboarding": {
+    "genres": ["Comedy", "Science Fiction"],
+    "seed_nope": {},
+    "seed_familiar": {}
+  },
+  "home_area_label": "home area",
+  "radius_mi": 15,
+  "timezone": "America/New_York",
+  "showtimes_base": "https://us.showtimes.com/movie-theaters/",
+  "theater_rule": "Any first-rate theater qualifies; exclude discount or second-rate experiences (not independents by category). Private config may name specific cinemas; public docs and examples stay chain-only.",
+  "theaters": [
+    {"id": "example-amc-branch-0000", "name": "AMC Example Branch", "city": "Example City", "chain": "AMC"},
+    {"id": "example-cinemark-branch-0000", "name": "Cinemark Example Branch", "city": "Example City", "chain": "Cinemark"},
+    {"id": "example-regal-branch-0000", "name": "Regal Example Branch", "city": "Example City", "chain": "Regal"},
+    {"id": "example-alamo-branch-0000", "name": "Alamo Drafthouse Example Branch", "city": "Example City", "chain": "Alamo Drafthouse"}
+  ],
+  "unsubscribed": {
+    "top_n_per_service": 10,
+    "excluded_services": ["YouTube TV"],
+    "confirmed_not_subscribed": []
+  }
+}

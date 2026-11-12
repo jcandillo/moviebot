@@ -1,0 +1,2 @@
+Synthetic JustWatch-shaped HTML for offline parser tests only.
+No live pages, no personal data, no real theater or owner references.

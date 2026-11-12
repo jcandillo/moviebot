@@ -1,0 +1,49 @@
+# Secrets and local config
+.env
+.env.*
+!.env.example
+config/local.json
+wake-webhook.env
+**/wake-webhook.env
+
+# Databases and runtime data
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+data/
+deploy/
+snapshots/
+backups/
+raw/
+posters/
+*.log
+
+# Picks / recommendations / personal taste (never commit)
+recommendations.json
+**/picks.json
+**/picks.*.json
+**/picks-*.json
+**/in_theaters*.json
+!config/local.example.json
+
+# Python / OS
+__pycache__/
+*.py[cod]
+*.egg-info/
+.Python
+.DS_Store
+.venv/
+venv/
+
+# Private review builds
+review.html
+*-readback*.json
+*.provenance-full.json
+
+# Local working data (personal; never commit)
+feedback-intake/
+prototype/
+staging-movies/
+recommendations.json
+moviebot.db

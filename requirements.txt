@@ -1,0 +1,5 @@
+# MovieBot core runs on the Python 3.10+ standard library only (sqlite3, urllib, json, ...).
+# No third-party packages are required to run pipeline/, theaters/ or the tests.
+#
+# Optional, only for re-rendering the demo screenshots (integrations/photo-frame/tools/render_demo_screens.py):
+#   playwright>=1.40   (then: playwright install chromium)
