@@ -21,7 +21,7 @@ Recommend **quality, curated movies** from the owner's preferences and confirmed
 - **Owner approval:** changes to what the frame renders need the owner's explicit OK through your host's normal approval flow.
 
 ## Views on the movies page
-1. **Watch at Home** — genre buttons (Comedy, Action & Adventure, Sci-Fi, Drama, Thriller, Family; TMDB genres), each with a New and a Classic card. Subscription/free streaming only (see home gate).
+1. **Watch at Home** — genre buttons (Comedy, Action & Adventure, Sci-Fi, Drama, Thriller, Family; TMDB genres), each with a New and a Classic card. Ad-free subscription streaming only (see home gate; no ad-supported services).
 2. **In Theaters** — separate view; titles, genre/type, description and cinema names; no showtimes.
 3. **Rent/Buy** — read-only, rent/buy-only titles.
 4. **Unsubscribed** — read-only, one sub-tab per major streaming service the owner does not have.
@@ -29,24 +29,25 @@ Recommend **quality, curated movies** from the owner's preferences and confirmed
 In Theaters and Rent/Buy show all movies side by side with the TMDB genre under each title. Every title keeps its TMDB-overview description and where-to-watch.
 
 ## Subscription-aware home gate
-- Watch at Home is eligible only with a US free/AVOD offer, or a US flatrate offer on a service in the owner's fresh `verified_active` subscription records (verified tier; bundle/channel aliases mapped).
+- Watch at Home is eligible only with a US flatrate offer on a service in the owner's fresh `verified_active` subscription records (verified tier; bundle/channel aliases mapped). Free/AVOD and other ad-supported offers never qualify (owner 2026-11-13).
 - `likely_active` and `unknown` never qualify. Provider availability, connector reachability and library lists are not proof of payment. Unknown stays unknown.
 - No qualifying offer: Rent/Buy if paid options exist, else hold. Never say "your X" for an unverified service.
 - An explicit, dated owner confirmation is a valid `verified_active` source (source=human). Receipts and renewal emails are supporting evidence and never block the gate.
 - A passed renewal date with no fresh evidence becomes `unknown`, never inactive. No account or billing changes.
+- **No ad-supported services (owner 2026-11-13):** Flag `exclude_ad_supported_services` (true) plus `ad_policy.json` next to entitlements. Blocked: FAST/AVOD (Tubi, Pluto, Roku Channel, free ad-supported Plex, Freevee and similar), live TV / cable apps with ads (Philo, Fubo, YouTube TV, Sling and similar), and named ad tiers (Essential, with Ads). Paramount+ matches only through a YouTube Primetime Channels-style channel path when that is how the owner has it. Rollback: set the flag false and republish through CAS.
 
 ## Rent/Buy view
 - Rent/buy-only titles move here (description + provider + rent/buy labels + dated check). No prices, votes, Watched/Next, sign-up links or transaction controls.
-- A home title with qualifying subscription/free streaming plus optional rent/buy stays on home: the qualifying streaming provider is its where-to-watch line, and paid alternatives go on a separate labeled line.
+- A home title with qualifying ad-free subscription streaming plus optional rent/buy stays on home: the qualifying streaming provider is its where-to-watch line, and paid alternatives go on a separate labeled line.
 - `unverified` or `verified_no_home_offers` titles are not home-eligible.
 - **Spec-only (not in this repository yet):** a guarded `publish-picks.py migrate-rent-buy` step that moves paid-only titles out of home in one compare-and-swap and writes `rent_buy {status, checked_at, note, items[]}`. Known limitation of the reference design: Rent/Buy is not auto-refreshed; an update that would leave an ineligible home title must be rejected for explicit repair, never silently re-verified.
 
 ## Unsubscribed view
-- One sub-tab per major US streaming service the owner does not have as `verified_active`. Live-TV bundles such as **YouTube TV are excluded**.
-- Each sub-tab shows the **top 10** taste-matched movies on that service's flatrate offer, as standard cards (description, provider, dated check).
+- One sub-tab per major US streaming service the owner does not have as `verified_active`. Ad-supported live-TV / FAST services (YouTube TV, Philo, Fubo, Sling and similar) are excluded as tabs.
+- Each sub-tab shows the **top 10** taste-matched movies on that service's **no-ads** flatrate offer only (owner 2026-11-13 NA2). Ad-tier plan names never qualify a title for a tab.
 - Label services whose status is unknown "not confirmed". Once the owner explicitly confirms they do not subscribe, label it **"not subscribed"**.
 - Read-only: no prices, sign-up links or transaction controls; never implies the owner has the service; never counts toward Watch at Home eligibility. Hide empty sub-tabs.
-- Precedence: a title also available on a `verified_active` subscription or free belongs to Watch at Home (if picked) and is excluded from every Unsubscribed sub-tab.
+- Precedence: a title also available on a `verified_active` ad-free subscription belongs to Watch at Home (if picked) and is excluded from every Unsubscribed sub-tab. Free/ads offers do not win Watch at Home precedence.
 - A rentable title that also streams on an unsubscribed service may appear in both Rent/Buy and Unsubscribed, with both access types labeled in its where-to-watch note.
 - **Spec-only:** the reference `index.html` currently renders Watch at Home and In Theaters; Rent/Buy and Unsubscribed views are specified here but not yet implemented in this repository.
 
@@ -73,7 +74,7 @@ In Theaters and Rent/Buy show all movies side by side with the TMDB genre under 
 
 ## Wake checklist
 1. **IMPORT** votes/actions into `raw_votes.db` (event_id dedupe).
-2. **APPLY** (`pipeline/feedback_apply.py`): up/down → `taste_signals`; Watched → one `viewing_events` row; Next → neutral.
+2. **APPLY** (`pipeline/feedback_apply.py`): up/down → `taste_signals`; Watched → one `viewing_events` row when evidence resolves (legacy new/classic or genre-card slots when `watched_genre_slot_evidence` is true); Next → neutral.
 3. **REGENERATE** `recommendations.json` + pools.
 4. **PLAN** stable same-slot selection; fetch current where-to-watch.
 5. **VALIDATE + CAS publish** with `publish-picks.py replace`.
@@ -82,7 +83,13 @@ In Theaters and Rent/Buy show all movies side by side with the TMDB genre under 
 `integrations/photo-frame/wake_pipeline.sh VOTES ACTIONS PICKS` runs through plan (no publish). Env: `MOVIEBOT_DB`, `MOVIEBOT_BACKUP_DIR`, `RAW_DB`, `RECS`, `LEASE_TOKEN`.
 
 ## Feedback semantics
-Thumbs → taste only. Next → same-slot replace, no taste/history. Watched → explicit viewing; never invent a watch time.
+Thumbs → taste only. Next → same-slot replace, no taste/history. Watched → explicit viewing with displayed-title evidence; never invent a watch time. Genre-card slots (`genre:<genre>:new|classic`) are accepted by `picks_evidence()` when flag `reco/flags.json` `watched_genre_slot_evidence` is true (same revision/tmdb_id/title/media_type checks as legacy slots); set the flag false to restore prior behavior.
+
+## Nov 12–13, 2026: genre-slot Watched evidence, published picks archive, change governance, no ad-supported services
+- **Genre-slot Watched evidence:** `picks_evidence()` accepts genre-card slots by exact `slot_id`. Flag: `watched_genre_slot_evidence` (true; false restores previous behavior).
+- **Published picks archive:** When `archive_published_picks` is true, `picks_archive.py` runs after each verified publish readback (hooked in `genre_flow.py` and `movie_night.py`, before feedback apply; not in legacy `wake_pipeline.sh`). It copies the readback file byte-for-byte to `feedback-intake/snapshots/picks-<YYYYMMDD-HHMM>-rev<N>.json`, verifies sha256, never overwrites (same sha = no-op; different sha kept with a suffix and logged in `archive_log.jsonl`), and writes only when `--db` is the production `raw_votes.db`. Rollback: set the flag false; for a full rollback restore the matching `.bak-archive-picks-*` files and remove `picks_archive.py`.
+- **Governance:** Design, architecture, pipeline-behavior or code changes go to the architecture owner as a proposal first (what, why, risk, rollback). Owner approval lands on the Architecture Page and skills before runtime change. The vote-wake routine never edits code or flags; it reports blocking bugs instead of patching them.
+- **No ad-supported services (NA1 / NA2):** `exclude_ad_supported_services` plus `ad_policy.json`. Free/ads never qualify for Watch at Home; ad services never appear in recommendations or as Unsubscribed tabs; Unsubscribed offers must be no-ads plans only. Instance CHANGELOG entries NA1 and NA2; rollback is the flag (and optional `ad_tier_names` key for NA2 alone).
 
 ## Wake credentials
 Use your host's scheduler/webhook feature for the vote wake. The owner pastes the wake URL/key into a gitignored env file (`wake-webhook.env`) or the host's secure secret entry themselves; the agent never sees or echoes it.
