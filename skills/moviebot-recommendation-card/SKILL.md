@@ -8,7 +8,7 @@ description: >-
 ---
 # MovieBot recommendation card
 
-Use for every suggested movie/TV title and every anti-recommendation, on every surface: chat, Frame Movie Night, dashboards, lists, and any other output.
+Use for every suggested movie/TV title and every anti-recommendation, on every surface: chat, Frame Movie Night, TV at home Series cards, dashboards, lists, and any other output.
 
 ## Display (required shape)
 1. **Title** (short)
@@ -17,7 +17,7 @@ Use for every suggested movie/TV title and every anti-recommendation, on every s
 4. **Key cast and director** — TMDB credits
 5. **TMDB vote average**
 6. **Year**
-7. **Where to watch** — region, named provider(s), and subscription/flatrate, rent, or buy. Prefer the human's confirmed subscribed services; label other and paid access honestly.
+7. **Where to watch** — region, named provider(s), and subscription/flatrate, rent, or buy. Prefer the human's confirmed subscribed services on ad-free plans; never list a free-with-ads/AVOD offer as a where-to-watch option when `exclude_ad_supported_services` is on. An ad-tier listing may be shown as Home/where-to-watch only for a service the human already owns ad-free, and only if it passes that service's normal match rule (owner 2026-11-14); label other and paid access honestly.
 
 ## Where-to-watch data
 - Required for EVERY suggestion and anti-recommendation; never silently omit it.
@@ -31,15 +31,17 @@ Use for every suggested movie/TV title and every anti-recommendation, on every s
 - Frame picks must also satisfy the data contract and publish gate in MovieBot frame Movie Night. Changes to what an optional display renders need the owner's explicit OK.
 
 ## Rent/Buy tab — owner decision 2026-11-08 (12:35 PM CT)
-Supersedes the earlier allowance of rent/buy on the home view. The movies page has three views: Watch at Home (genre buttons), In Theaters, and Rent/Buy.
-- Genre home views (Comedy, Action & Adventure, Sci-Fi, Drama, Thriller, Family) show only titles streamable via subscription or free, with no per-title payment.
+Supersedes the earlier allowance of rent/buy on the home view. The movies page views are: Movies at home (genre buttons; formerly labeled Movies at home), TV at home (same six genre chips, Series cards), In Theaters, Rent/Buy, and Unsubscribed.
+
+TV at home (owner 2026-11-14): **spec-only in this repository** (the reference `index.html` still renders the older "Watch at home" label and has no TV view). A Frame mode for TV series on owned ad-free subscriptions, with the same no-ads/entitlement rules and the same recommendation-card contract (where-to-watch required, no runtime). Exclude watched or disliked titles. Use TMDB TV plus verified offers only. Cards are read-only in v1 (no vote / Watched / Next). Flag `frame_tv_at_home_page` (default on); rollback is flag off plus republishing a disabled spec; publish via a `set-tv-at-home` step. Internal keys may stay `watch_at_home`.
+- Genre home views (Comedy, Action & Adventure, Sci-Fi, Drama, Thriller, Family) show only titles streamable on an ad-free subscription, with no per-title payment. Free/AVOD offers don't count. An ad-tier listing counts as Home only for a service the human already owns ad-free, and only if it passes that service's normal match rule (owner 2026-11-14).
 - Rent/buy-only titles move to the Rent/Buy tab (description + provider + rent/buy labels; never invent prices).
-- A title with qualifying subscription/free streaming plus optional rent/buy may stay on home: show the qualifying streaming provider as its where-to-watch line, and paid alternatives on a separate labeled line.
+- A title with qualifying ad-free subscription streaming plus optional rent/buy may stay on home: show the qualifying streaming provider as its where-to-watch line, and paid alternatives on a separate labeled line.
 - `unverified` or `verified_no_home_offers` titles are not home-eligible. Wake planning/eligibility and guarded CAS publish enforce this; real feedback is preserved.
 - In Theaters unchanged: titles, descriptions and chain names only; no showtimes.
 
 ## Hard rules
-- No runtime.
+- No runtime. The same contract applies to TV at home Series cards as to movie cards.
 - Clean and crisp.
 - Same structure for anti-recommendations.
 - A title never on both lists; suggested wins.
@@ -52,11 +54,11 @@ your instance Architecture document (public reference: `docs/architecture.md`; k
 ### Rent/Buy view details and limits (rev18, 2026-11-08)
 - The Rent/Buy view is read-only. Each card shows the TMDB description, the rent/buy providers, and a dated "checked" line (region and source). There are no prices, votes, Watched/Next or transaction controls.
 - **Spec-only (not yet in this repository's `publish-picks.py`):** `publish-picks.py migrate-rent-buy --expected-revision N --spec FILE` makes one guarded compare-and-swap. It replaces each listed genre card (guarded by its expected outgoing tmdb_id), writes `rent_buy` {status, checked_at, note, items[]}, and is idempotent on `migration_id`. Slots, In Theaters and other cards stay untouched. Use it to move paid-only titles out of the home view.
-- Known limitation: Rent/Buy is not auto-refreshed yet. If a later provider check finds that a home title lost its subscription/free offer, nothing migrates it automatically. The publisher rejects the ineligible update and requires an explicit repair or alert. It never claims eligibility was re-verified when it was not.
+- Known limitation: Rent/Buy is not auto-refreshed yet. If a later provider check finds that a home title lost its ad-free subscription offer, nothing migrates it automatically. The publisher rejects the ineligible update and requires an explicit repair or alert. It never claims eligibility was re-verified when it was not.
 
 ## Subscription-aware home gate — owner decision 2026-11-08 (1:44 PM CT)
 Supersedes the earlier "any subscription/free provider" home gate.
-- Watch at Home / genre views: eligible only with a US free/AVOD offer, or a US flatrate offer on a service in the human's fresh `verified_active` ServiceSubscription entitlements (verified tier; bundle/channel aliases mapped).
+- Movies at home and TV at home / genre views: eligible only with a US flatrate offer on a service in the human's fresh `verified_active` ServiceSubscription entitlements (verified tier; bundle/channel aliases mapped). Free/AVOD offers never qualify (owner 2026-11-13). An ad-tier listing counts as Home only for a service the human already owns ad-free, and only if it passes that service's normal match rule (owner 2026-11-14).
 - `likely_active` and `unknown` never qualify. Provider availability, connector reachability, and library service lists are not proof of payment. Unknown stays unknown.
 - No qualifying offer: Rent/Buy tab if paid options exist, else hold. Never say "your X" for an unverified service.
 - ServiceSubscription rows: status, confidence, evidence_refs, as_of, tier, access_path (direct/bundle/channel_addon/free), host_service_id, renews_on, stale_after, known expiry.
@@ -66,10 +68,10 @@ Supersedes the earlier "any subscription/free provider" home gate.
 
 ## Unsubscribed tab
 - One sub-tab per major US streaming service the owner does not have as `verified_active`. Live-TV bundles such as YouTube TV are excluded.
-- Each sub-tab shows the **top 10** taste-matched movies on that service's flatrate offer, as standard cards (description, provider, dated check). Shows what each missing service would add.
+- Each sub-tab shows the **top 10** taste-matched movies on that service's no-ads flatrate offer only (owner 2026-11-13), as standard cards (description, provider, dated check). Shows what each missing service would add.
 - Services with unknown status are labeled "not confirmed"; once the owner explicitly confirms they do not subscribe, label the service **"not subscribed"**.
-- Read-only: no prices, sign-up links or transaction controls; never implies the owner has the service; never counts toward Watch at Home eligibility. Hide empty sub-tabs.
-- Precedence: a title also available on a `verified_active` subscription or free belongs to Watch at Home (if picked) and is excluded from every Unsubscribed sub-tab; the existing subscription wins.
+- Read-only: no prices, sign-up links or transaction controls; never implies the owner has the service; never counts toward Movies at home or TV at home eligibility. Hide empty sub-tabs.
+- Precedence: a title also available on a `verified_active` ad-free subscription belongs to Movies at home or TV at home (free/ads offers don't win precedence since 2026-11-13) (if picked) and is excluded from every Unsubscribed sub-tab; the existing subscription wins.
 - A rentable title that also streams on an unsubscribed service may appear in both Rent/Buy and Unsubscribed, with both access types labeled.
 
 ## Why lines and taste profile v3

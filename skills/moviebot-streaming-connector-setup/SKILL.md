@@ -60,7 +60,7 @@ The human only ever (a) approves the login in their credential manager and (b) p
 
 ## Subscription-aware home gate — owner decision 2026-11-08 (1:44 PM CT)
 Supersedes the earlier "any subscription/free provider" home gate.
-- Watch at Home / genre views: eligible only with a US free/AVOD offer, or a US flatrate offer on a service in the human's fresh `verified_active` ServiceSubscription entitlements (verified tier; bundle/channel aliases mapped).
+- Movies at home and TV at home / genre views: eligible only with a US flatrate offer on a service in the human's fresh `verified_active` ServiceSubscription entitlements (verified tier; bundle/channel aliases mapped). Free/AVOD offers never qualify (owner 2026-11-13). An ad-tier listing counts as Home only for a service the human already owns ad-free, and only if it passes that service's normal match rule (owner 2026-11-14).
 - `likely_active` and `unknown` never qualify. Provider availability, connector reachability, and library service lists are not proof of payment. Unknown stays unknown.
 - No qualifying offer: Rent/Buy tab if paid options exist, else hold. Never say "your X" for an unverified service.
 - ServiceSubscription rows: status, confidence, evidence_refs, as_of, tier, access_path (direct/bundle/channel_addon/free), host_service_id, renews_on, stale_after, known expiry.

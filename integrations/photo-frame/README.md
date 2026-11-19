@@ -6,7 +6,7 @@ MovieBot (this repository) and the [photo-frame dashboard](https://github.com/jc
 
 ## What you get
 
-- `index.html` — movies page: Watch at Home genre buttons (New/Classic) with descriptions and where-to-watch, plus a separate In Theaters view (titles and theater names only; no showtimes)
+- `index.html` — movies page: "Watch at home" genre buttons (spec label: Movies at home) (New/Classic) with descriptions and where-to-watch, plus a separate In Theaters view (titles and theater names only; no showtimes)
 - `https_server.py` / `server.py` — local display HTTP(S) helpers (vote/action endpoints, staging server)
 - `publish-picks.py` — compare-and-swap publisher for `picks.json` on the display host (imports the genre schema from core `pipeline/genre_cards.py`)
 - `wake_pipeline.sh` — optional orchestrator that calls core pipeline modules, then stops before publish
@@ -27,13 +27,13 @@ Core packages under `pipeline/` and `theaters/` must not import anything from th
 
 | View | Status in this repo | Rules |
 |---|---|---|
-| Watch at Home (six genres × New/Classic) | **Implemented** (`index.html`) | Subscription/free only, gated on fresh `verified_active` subscription evidence (or free/AVOD). |
+| Movies at home (six genres × New/Classic; shipped label "Watch at home") | **Implemented** (`index.html`) | Ad-free subscription only, gated on fresh `verified_active` subscription evidence; free/AVOD never qualifies. |
 | In Theaters | **Implemented** (`index.html`, `theaters/local_showtimes.py`) | Any first-rate theater; exclude discount/second-rate. No showtimes. Public examples chain-only. |
 | Rent/Buy | **Spec-only** | Read-only rent/buy-only titles; no prices or transaction controls. |
 | Unsubscribed | **Spec-only** | Top 10 per unsubscribed service; YouTube TV excluded; "not subscribed" once the owner confirms. |
 
 ## Subscription-aware home gate
-- Watch at Home is eligible only with a US free/AVOD offer, or a US flatrate offer on a service in the owner's fresh `verified_active` subscription records (verified tier; bundle/channel aliases mapped).
+- Movies at home is eligible only with a US flatrate offer on a service in the owner's fresh `verified_active` subscription records (verified tier; bundle/channel aliases mapped). Free/AVOD offers never qualify (owner 2026-11-13). An ad-tier listing counts as Home only for a service the owner already has ad-free, and only if it passes that service's normal match rule (owner 2026-11-14).
 - `likely_active` and `unknown` never qualify. Provider availability, connector reachability and library lists are not proof of payment.
 - No qualifying offer: Rent/Buy if paid options exist, else hold. Never say "your X" for an unverified service.
 - An explicit, dated owner confirmation is a valid `verified_active` source (source=human). A passed renewal date with no fresh evidence becomes `unknown`, never inactive. No account or billing changes.
@@ -48,8 +48,8 @@ Core packages under `pipeline/` and `theaters/` must not import anything from th
 - One sub-tab per major US streaming service the owner does not have as `verified_active`. Live-TV bundles such as **YouTube TV are excluded**.
 - Each sub-tab shows the **top 10** taste-matched movies on that service's flatrate offer, as standard cards (description, provider, dated check).
 - Unknown status is labeled "not confirmed"; once the owner explicitly confirms they don't subscribe, label it **"not subscribed"**.
-- Read-only: no prices, sign-up links or transaction controls; never implies the owner has the service; never counts toward Watch at Home. Hide empty sub-tabs.
-- Precedence: a title also on a `verified_active` subscription or free belongs to Watch at Home (if picked) and is excluded from every Unsubscribed sub-tab. A rentable title that also streams on an unsubscribed service may appear in both Rent/Buy and Unsubscribed, with both access types labeled.
+- Read-only: no prices, sign-up links or transaction controls; never implies the owner has the service; never counts toward Movies at home or TV at home. Hide empty sub-tabs.
+- Precedence: a title also on a `verified_active` ad-free subscription belongs to Movies at home or TV at home (if picked) and is excluded from every Unsubscribed sub-tab. A rentable title that also streams on an unsubscribed service may appear in both Rent/Buy and Unsubscribed, with both access types labeled.
 - Configure via `config/local.json` → `unsubscribed` (`top_n_per_service`, `excluded_services`, `confirmed_not_subscribed`).
 
 ## Example views

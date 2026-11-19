@@ -43,7 +43,7 @@ Every movie/TV suggestion and anti-recommendation, in chat or dashboard, include
 • Key cast and director.
 • TMDB vote average, clearly labeled as TMDB’s rating.
 • Release year (or first-air year for TV).
-• Where to watch: US region, named providers, included subscription/free offers first, then separately labeled rent and buy offers. Optional frame display: genre/home views show only subscription/free titles (no per-title payment); rent/buy-only titles go to a separate Rent/Buy tab; a home title with optional rent/buy shows its qualifying streaming provider with paid alternatives on a separate line. The Rent/Buy tab is read-only (provider and dated check, no prices or transaction controls); a guarded migrate step moves paid-only titles out of home, and an update that would leave an ineligible home title is rejected for explicit repair rather than auto-reverified.
+• Where to watch: US region, named providers, included ad-free subscription offers first, then separately labeled rent and buy offers. Optional frame display: genre/home views show only ad-free subscription titles (no per-title payment; free/AVOD offers and ad-tier listings do not count unless the user already has that service ad-free); rent/buy-only titles go to a separate Rent/Buy tab; a home title with optional rent/buy shows its qualifying streaming provider with paid alternatives on a separate line. The Rent/Buy tab is read-only (provider and dated check, no prices or transaction controls); a guarded migrate step moves paid-only titles out of home, and an update that would leave an ineligible home title is rejected for explicit repair rather than auto-reverified.
 No runtime or multi-factor scoring clutter on cards. Enrich missing descriptions before presentation; do not fabricate plot, credits or scores. If required data cannot be verified, disclose the gap rather than presenting an apparently complete card.
 Match subscriptions using region and plan/bundle evidence; provider presence alone does not prove entitlement. Cache by media kind, TMDB ID and region with source, checked_at and expiry; refresh expired observations. A successful empty lookup is checked_unavailable (“Checked: unavailable in the US”). A failed lookup is verification_unavailable (“Availability unverified”). Display the appropriate explicit status. Never invent prices, offers or deep links.
 Rank by explicit taste, accepted history and access; exclude already-watched and avoided titles by default. Evidence must support every reason. Unknown required constraints are not a pass. Support movies first; extend TV only where the host has verified capabilities.
@@ -92,7 +92,7 @@ Public examples illustrate design, not current entitlement, billing truth or pro
 Tell the user what is actually implemented, what remains unsupported, where their private data lives, what permissions were granted and which acceptance checks passed. Offer one concrete next step, not an open-ended questionnaire.
 
 ## 16. Subscription-aware home gate (optional display views)
-- Watch at Home / genre views: eligible only with a US free/AVOD offer, or a US flatrate offer on a service in the human's fresh `verified_active` ServiceSubscription entitlements (verified tier; bundle/channel aliases mapped).
+- Movies at home and TV at home / genre views: eligible only with a US flatrate offer on a service in the human's fresh `verified_active` ServiceSubscription entitlements (verified tier; bundle/channel aliases mapped). Free/AVOD offers never qualify (owner 2026-11-13). An ad-tier listing counts as Home only for a service the human already owns ad-free, and only if it passes that service's normal match rule (owner 2026-11-14).
 - `likely_active` and `unknown` never qualify. Provider availability, connector reachability, and library service lists are not proof of payment. Unknown stays unknown.
 - No qualifying offer: Rent/Buy tab if paid options exist, else hold. Never say "your X" for an unverified service.
 - ServiceSubscription rows: status, confidence, evidence_refs, as_of, tier, access_path (direct/bundle/channel_addon/free), host_service_id, renews_on, stale_after, known expiry.
@@ -102,9 +102,9 @@ Tell the user what is actually implemented, what remains unsupported, where thei
 
 ## 17. Unsubscribed view (optional display)
 - One sub-tab per major US streaming service the user does not have as `verified_active`. Live-TV bundles such as YouTube TV are excluded.
-- Each sub-tab shows the top 10 taste-matched movies on that service's subscription (flatrate) offer, as standard cards.
+- Each sub-tab shows the top 10 taste-matched movies on that service's no-ads subscription (flatrate) offer, as standard cards.
 - Unknown status is labeled "not confirmed"; once the user explicitly confirms they do not subscribe, label it "not subscribed".
-- Any title also available on a verified service the user already has, or for free, is excluded from every Unsubscribed sub-tab. Read-only: no prices, sign-up links or transaction controls; empty sub-tabs are hidden.
+- Any title also available on a verified service the user already has, on an ad-free plan, is excluded from every Unsubscribed sub-tab. Read-only: no prices, sign-up links or transaction controls; empty sub-tabs are hidden.
 
 ## 18. What the reference repository implements today
 Be honest with the user about this split; do not present spec-only items as working.
@@ -115,8 +115,8 @@ Be honest with the user about this split; do not present spec-only items as work
 | Where-to-watch | Implemented via public JustWatch US pages (stopgap). **Spec path: TMDB `watch/providers`.** | `pipeline/where_to_watch.py` |
 | Title metadata | Implemented via public TMDB web pages (stopgap). **Spec path: TMDB API with your own key.** | `pipeline/feedback_apply.py` |
 | In Theaters builder (titles only) | Implemented | `theaters/local_showtimes.py` |
-| Optional display: Watch at Home + In Theaters | Implemented | `integrations/photo-frame/` |
-| Optional display: Rent/Buy, Unsubscribed, `migrate-rent-buy` | Spec-only | this document, `integrations/photo-frame/README.md` |
+| Optional display: Movies at home (shipped label "Watch at home") + In Theaters | Implemented | `integrations/photo-frame/` |
+| Optional display: TV at home, Rent/Buy, Unsubscribed, `migrate-rent-buy` | Spec-only | this document, `integrations/photo-frame/README.md` |
 | Taste-only onboarding, watch-history interview, taste v3 weighting, `title_metadata` | Spec-only (skills describe the procedure) | `skills/`, `docs/schema.sql` [SPEC] tables |
 | Subscription records and the `verified_active` gate | Spec-only schema; planner enforces home eligibility from `watch_availability` | `docs/schema.sql` |
 | Streaming connectors | Procedure only (host browser + credential manager) | `skills/moviebot-streaming-connector-setup/` |

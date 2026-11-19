@@ -76,7 +76,7 @@ CREATE TABLE IF NOT EXISTS watch_availability(
   media_type TEXT DEFAULT 'movie', country TEXT DEFAULT 'US', source TEXT DEFAULT 'justwatch_public_page', superseded_reason TEXT);
 
 -- ===================================================================================
--- [SPEC] Subscriptions (ServiceSubscription). Drives the Watch at Home gate: only fresh verified_active rows qualify.
+-- [SPEC] Subscriptions (ServiceSubscription). Drives the Movies at home gate: only fresh verified_active rows qualify.
 -- ===================================================================================
 CREATE TABLE IF NOT EXISTS service_subscriptions(
   id INTEGER PRIMARY KEY, service_id INTEGER NOT NULL REFERENCES services(id),
